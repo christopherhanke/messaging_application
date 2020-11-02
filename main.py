@@ -1,7 +1,7 @@
 import uuid
 import hashlib
 
-from flask import Flask, render_template, redirect, url_for, request
+from flask import Flask, render_template, redirect, url_for, request, flash
 from datetime import datetime
 from models import db, User, Messages
 
@@ -20,7 +20,12 @@ def index():
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
-    return render_template("register.html")
+    if request.method == "GET":
+        flash("Test")
+        return render_template("register.html")
+
+    elif request.method == "POST":
+        return render_template("register.html")
 
 
 @app.route("/login", methods=["GET", "POST"])
