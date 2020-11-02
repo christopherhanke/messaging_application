@@ -18,13 +18,16 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
                 <div class="navbar-nav">
-                    <a class="nav-link {% if request.endpoint == "index" %} active {% endif %}" href="/">Home</a>
-                    <a class="nav-link {% if request.endpoint == "login" %} active {% endif %}" href="/login">Login</a>
-                    <a class="nav-link {% if request.endpoint == "register" %} active {% endif %}" href="/register">Register</a>
-                    <a class="nav-link" href="/profile">Profile</a>
-                    <a class="nav-link" href="/users">Users</a>
-                    <a class="nav-link" href="/logout">Logout</a>
+                    <a class="nav-link {% if request.endpoint == "index" %}active{% endif %}" href="/">Home</a>
 
+                {% if not session.get("session_token") %}
+                    <a class="nav-link {% if request.endpoint == "login" %}active{% endif %}" href="/login">Login</a>
+                    <a class="nav-link {% if request.endpoint == "register" %}active{% endif %}" href="/register">Register</a>
+                {% else %}
+                    <a class="nav-link {% if request.endpoint == "profile" %}active{% endif %}" href="/profile">Profile</a>
+                    <a class="nav-link {% if request.endpoint == "users" %}active{% endif %}" href="/users">Users</a>
+                    <a class="nav-link" href="/logout">Logout</a>
+                {% endif %}
                 </div>
           </div>
         </nav>
