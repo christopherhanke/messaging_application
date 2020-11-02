@@ -1,0 +1,2 @@
+Flask==1.1.2
+sqla-wrapper==4.200628
