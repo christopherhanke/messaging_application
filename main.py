@@ -23,18 +23,25 @@ def index():
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
+    # check if user is logged in, if user is logged in redirect to profile
+    user = get_logged_in_user()
+    if user:
+        flash("You are logged in.", "info")
+        return redirect(url_for("profile"))
+
+    # get-request to register site
     if request.method == "GET":
-        if "user" in session:
-            flash(f"Your are logged in, {session['user']}", "info")
-            return redirect(url_for("index"))
         return render_template("register.html")
 
+    # handle for post request on register
+    # handling form-data from user and checking user-db
     elif request.method == "POST":
         name = request.form.get("name")
         email = request.form.get("email")
         password = request.form.get("password")
         hashed_password = hashlib.sha256(password.encode()).hexdigest()
 
+        # checking user db and initializing new user if name is new/unique
         user = db.query(User).filter_by(name=name).first()
         if not user:
             user = User(
@@ -45,12 +52,14 @@ def register():
                 deleted=False
             )
 
+            # setting up session token
             session_token = str(uuid.uuid4())
             user.session_token = session_token
+            session["session_token"] = session_token
+
+            # commit user to db
             db.add(user)
             db.commit()
-
-            session["session_token"] = session_token
 
             flash("Registration successfully!", "info")
             return redirect(url_for("index"))
@@ -62,6 +71,11 @@ def register():
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
+    user = get_logged_in_user()
+    if user:
+        flash("You are logged in.", "info")
+        return redirect(url_for("profile"))
+
     if request.method == "GET":
         return render_template("login.html")
 
@@ -107,13 +121,17 @@ def logout():
 # view for user profile
 @app.route("/profile")
 def profile():
-    return page_under_construction()
+    user = get_logged_in_user()
+    if user:
+        return render_template("profile.html", user=user)
+
+    flash("You are not logged in.", "info")
+    return redirect(url_for("index"))
 
 
 @app.route("/users", methods=["GET"])
 def all_users():
     users = db.query(User).filter_by(deleted=False).all()
-
     return render_template("users.html", users=users)
 
 

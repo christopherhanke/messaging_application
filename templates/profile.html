@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="card mt-2 mb-2">
+        <div class="card-body">
+            <div class="card-text">
+                <div class="row">
+                    <h6 class="col col-sm-2">Your Username:</h6>
+                    <p class="col col-sm">{{ user.name }}</p>
+                </div>
+                <div class="row">
+                    <h6 class="col col-sm-2">Your Email:</h6>
+                    <p class="col col-sm">{{user.email}}</p>
+                </div>
+                <div class="row">
+                    <h6 class="col col-sm-2">Your Location:</h6>
+                    <p class="col col-sm">{{user.location}}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
