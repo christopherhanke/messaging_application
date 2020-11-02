@@ -15,8 +15,8 @@ db.create_all()
 # index page
 @app.route("/")
 def index():
-    if "session_token" in session:
-        user = db.query(User).filter_by(session_token=session["session_token"], deleted=False).first()
+    user = get_logged_in_user()
+    if user:
         flash(f"Hello {user.name}")
     return render_template("index.html")
 
@@ -81,6 +81,7 @@ def login():
 
         session_token = str(uuid.uuid4())
         user.session_token = session_token
+        session["session_token"] = session_token
         db.add(user)
         db.commit()
 
@@ -90,10 +91,20 @@ def login():
 
 @app.route("/logout", methods=["GET"])
 def logout():
+    user = get_logged_in_user()
+    if not user:
+        flash("You are not logged in.", "info")
+        return redirect(url_for("index"))
+    user.session_token = None
+    db.add(user)
+    db.commit()
 
-    return page_under_construction()
+    session.pop("session_token", None)
+    flash("You have been logged out.")
+    return redirect(url_for("index"))
 
 
+# view for user profile
 @app.route("/profile")
 def profile():
     return page_under_construction()
@@ -106,9 +117,19 @@ def all_users():
     return render_template("users.html", users=users)
 
 
+# helping function for sites under construction
 def page_under_construction():
+    # flashing info to user and redirect to index-page
     flash("Page is under construction", "info")
     return redirect(url_for("index"))
+
+
+# helping function getting logged in user
+def get_logged_in_user():
+    user = None
+    if "session_token" in session:
+        user = db.query(User).filter_by(session_token=session["session_token"], deleted=False).first()
+    return user
 
 
 if __name__ == "__main__":
