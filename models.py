@@ -10,6 +10,7 @@ class User(db.Model):
     email = db.Column(db.String(100), unique=True)
     location = db.Column(db.String)
     password = db.Column(db.String)
+    session_token = db.Column(db.String)
     deleted = db.Column(db.Boolean)
 
 
