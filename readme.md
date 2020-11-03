@@ -12,5 +12,7 @@ Therefore the app needs:
 #
 **todo**
 - implement bootstrap
+- implement register system
 - implement login system
-- 
+- implement logout
+- showing users in application

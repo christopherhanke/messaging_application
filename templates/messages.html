@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <!-- messaging container with user conversation -->
+    <div class="container">
+        <div class="row mt-1 justify-content-start"><div class="col-5 bg-secondary text-white rounded">Test</div></div>
+        <!-- loop for messages -->
+        {% for msg in messages %}
+        <div class="row mt-1 justify-content-center">
+            <!-- justify-content-start / justify-content-end == set in row -->
+            <div class="col-6 border">
+                {{msg}}
+            </div>
+        </div>
+        {% endfor %}
+        <div class="row mt-1 justify-content-end"><div class="col-5 border bg-dark text-white rounded">Test</div></div>
+    </div>
+
+    <!-- form for new message -->
+    <form>
+        <div class="form-group row mt-1">
+            <label class="col col-sm-2 col-form-label mt-1">Message:</label>
+            <div class="col-sm-8 mt-1">
+                <input type="text" class="form-control" name="message">
+            </div>
+            <div class="col-sm-1 mt-1">
+                <button type="Submit" class="btn btn-primary">Send</button>
+            </div>
+        </div>
+
+    </form>
+{% endblock %}

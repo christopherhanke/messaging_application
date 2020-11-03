@@ -131,8 +131,34 @@ def profile():
 
 @app.route("/users", methods=["GET"])
 def all_users():
+    user = get_logged_in_user()
+    if not user:
+        flash("You are not logged in.", "info")
+        return redirect(url_for("index"))
+
     users = db.query(User).filter_by(deleted=False).all()
     return render_template("users.html", users=users)
+
+
+@app.route("/users/<user_id>", methods=["GET"])
+def users_details(user_id):
+    user = get_logged_in_user()
+    if not user:
+        flash("You are not logged in.", "info")
+        return redirect(url_for("index"))
+    user_profile = db.query(User).get(int(user_id))
+    return render_template("users_details.html", user=user_profile)
+
+
+@app.route("/messages/<user_id>", methods=["GET"])
+def messages(user_id):
+    user = get_logged_in_user()
+    if not user:
+        flash("You are not logged in.", "info")
+        return redirect(url_for("index"))
+    user_partner = db.query(User).get(int(user_id))
+
+    return render_template("messages.html", messages=["You are not alone.", "I'll be here with you", "Test 3"])
 
 
 # helping function for sites under construction

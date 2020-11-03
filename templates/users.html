@@ -1,11 +1,15 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <ul>
+    <table class="table">
         {% for user in users %}
-            <li>{{user.name}}</li>
+            <tr>
+                <td>{{user.name}}</td>
+                <td><a href="/users/{{user.id}}">Profile</a></td>
+                <td><a href="#">Messages</a></td>
+            </tr>
         {% endfor %}
-    </ul>
+    </table>
 
 
 {% endblock %}
