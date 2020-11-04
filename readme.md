@@ -11,8 +11,6 @@ Therefore the app needs:
 
 #
 **todo**
-- implement bootstrap
-- implement register system
-- implement login system
-- implement logout
-- showing users in application
+- implement some sort of auto refresh for messages (possibilities: socket/ajax/iframe-refresh)
+- show user new messages / notification for user
+- implement weather from user location
