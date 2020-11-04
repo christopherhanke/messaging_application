@@ -17,6 +17,6 @@ class User(db.Model):
 class Messages(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     message = db.Column(db.String)
-    time = db.Column(db.String)
-    sender = db.Column(db.String)
-    receiver = db.Column(db.String)
+    time = db.Column(db.DateTime)
+    sender = db.Column(db.Integer)
+    receiver = db.Column(db.Integer)

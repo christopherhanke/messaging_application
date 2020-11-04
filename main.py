@@ -1,14 +1,15 @@
 import uuid
 import hashlib
+import datetime
 
 from flask import Flask, render_template, redirect, url_for, request, flash, session
-from datetime import datetime
 from models import db, User, Messages
-
+from sqlalchemy import or_, and_
 
 # runtime environment
 app = Flask(__name__)
 app.secret_key = str(uuid.uuid4())
+app.permanent_session_lifetime = datetime.timedelta(minutes=5)
 db.create_all()
 
 
@@ -71,31 +72,38 @@ def register():
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
+    # getting logged in user or redirect
     user = get_logged_in_user()
     if user:
         flash("You are logged in.", "info")
         return redirect(url_for("profile"))
 
+    # show login with GET request
     if request.method == "GET":
         return render_template("login.html")
 
+    # login when POST request
     elif request.method == "POST":
         name = request.form.get("name")
         password = request.form.get("password")
         hashed_password = hashlib.sha256(password.encode()).hexdigest()
 
+        # check for username in db
         user = db.query(User).filter_by(name=name).first()
         if not user:
             flash("Username does not exist!", "info")
             return redirect(url_for("login"))
 
+        # check password for login
         if hashed_password != user.password:
             flash("Wrong password!", "info")
             return redirect(url_for("login"))
 
+        # set session token and save to db
         session_token = str(uuid.uuid4())
         user.session_token = session_token
         session["session_token"] = session_token
+        session.permanent = True
         db.add(user)
         db.commit()
 
@@ -105,15 +113,20 @@ def login():
 
 @app.route("/logout", methods=["GET"])
 def logout():
+    # getting logged in user or redirect
     user = get_logged_in_user()
     if not user:
         flash("You are not logged in.", "info")
         return redirect(url_for("index"))
+
+    # delete session_token from user in db
     user.session_token = None
     db.add(user)
     db.commit()
 
+    # delete session token from session
     session.pop("session_token", None)
+
     flash("You have been logged out.")
     return redirect(url_for("index"))
 
@@ -131,34 +144,76 @@ def profile():
 
 @app.route("/users", methods=["GET"])
 def all_users():
+    # getting logged in user or redirect
     user = get_logged_in_user()
     if not user:
         flash("You are not logged in.", "info")
         return redirect(url_for("index"))
 
-    users = db.query(User).filter_by(deleted=False).all()
+    # get all users in db that are not deleted or the logged in user
+    users = db.query(User).filter(and_(User.deleted == False, User.id != user.id))
+
     return render_template("users.html", users=users)
 
 
 @app.route("/users/<user_id>", methods=["GET"])
 def users_details(user_id):
+    # getting logged in user or redirect
     user = get_logged_in_user()
     if not user:
         flash("You are not logged in.", "info")
         return redirect(url_for("index"))
-    user_profile = db.query(User).get(int(user_id))
+
+    # getting the user from db to display his profile
+    try:
+        user_id = int(user_id)
+        user_profile = db.query(User).get(user_id)
+    except ValueError:
+        flash("Invalid User", "info")
+        return redirect(url_for("all_users"))
+
     return render_template("users_details.html", user=user_profile)
 
 
-@app.route("/messages/<user_id>", methods=["GET"])
-def messages(user_id):
+@app.route("/messages/<partner>", methods=["GET", "POST"])
+def messages(partner):
+    # getting logged in user or redirect
     user = get_logged_in_user()
     if not user:
         flash("You are not logged in.", "info")
         return redirect(url_for("index"))
-    user_partner = db.query(User).get(int(user_id))
 
-    return render_template("messages.html", messages=["You are not alone.", "I'll be here with you", "Test 3"])
+    # getting entry for partner form db
+    try:
+        partner_id = int(partner)
+        partner = db.query(User).filter(User.id == partner_id).first()
+    except ValueError:
+        flash("Invalid Chatpartner", "info")
+        return redirect(url_for("all_users"))
+
+    # if method post, then take message and create new entry in db
+    if request.method == "POST":
+        message = request.form.get("message")
+        time = datetime.datetime.now()
+
+        msg = Messages(
+            message=message,
+            time=time,
+            sender=user.id,
+            receiver=partner
+        )
+        db.add(msg)
+        db.commit()
+
+    # get all messages for logged in user and partner
+    msgs = db.query(Messages).filter(
+        or_(
+            and_(Messages.sender == user.id, Messages.receiver == partner.id),
+            and_(Messages.sender == partner.id, Messages.receiver == user.id)
+        )
+    )
+
+    return render_template("messages.html", messages=msgs, user=user, partner=partner)
 
 
 # helping function for sites under construction
