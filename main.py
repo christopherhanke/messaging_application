@@ -2,9 +2,10 @@ import uuid
 import hashlib
 import datetime
 
+# flask_session
 from flask import Flask, render_template, redirect, url_for, request, flash, session
 from models import db, User, Messages
-from sqlalchemy import or_, and_
+from sqlalchemy import and_
 
 # runtime environment
 app = Flask(__name__)
@@ -200,17 +201,14 @@ def messages(partner):
             message=message,
             time=time,
             sender=user.id,
-            receiver=partner
+            receiver=partner.id
         )
         db.add(msg)
         db.commit()
 
     # get all messages for logged in user and partner
     msgs = db.query(Messages).filter(
-        or_(
-            and_(Messages.sender == user.id, Messages.receiver == partner.id),
-            and_(Messages.sender == partner.id, Messages.receiver == user.id)
-        )
+            and_(Messages.sender.in_([user.id, partner.id]), Messages.receiver.in_([partner.id, user.id]))
     )
 
     return render_template("messages.html", messages=msgs, user=user, partner=partner)
